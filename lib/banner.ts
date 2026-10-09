@@ -1,0 +1,3 @@
+import {page} from './data';
+export const defaultBanner={title:'Bayesian Statistics\nLaboratory',subtitle:'Exploring uncertainty, building insight.\n전남대학교 통계학과 이광민 교수님 연구실',image:'/assets/illustrations/posterior.svg',buttonLabel:'LEARN MORE ↗',buttonHref:'/about/introduction'};
+export async function banner(){const row=await page('home/banner');if(!row)return defaultBanner;try{const body=JSON.parse(row.body||'{}');return {...defaultBanner,title:row.title,...Object.fromEntries(Object.entries(body).filter(([k,v])=>['subtitle','image','buttonLabel','buttonHref'].includes(k)&&typeof v==='string'))};}catch{return defaultBanner}}

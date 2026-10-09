@@ -1,0 +1,1 @@
+Original vector assets for Bayesian Statistics Laboratory. Prior and posterior density curves represent learning from data; the light dot indicates the posterior mode. Brand: brand/lab-mark.svg (logo and favicon). Homepage artwork: illustrations/posterior.svg. These assets were created for this project and do not use another institution's logo.

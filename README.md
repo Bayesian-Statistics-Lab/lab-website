@@ -1,26 +1,29 @@
 # Bayesian Statistics Laboratory — Chonnam National University
 
-DSRI 디자인을 참고한 전남대학교 통계학과 이광민 교수님 연구실 Next.js 프로젝트 (개발용 최초 구현).
+DSRI 디자인을 참고한 전남대학교 통계학과 이광민 교수님 연구실 Next.js 프로젝트 (Vercel 배포 프로젝트).
 
 ## 현재 구현됨
 - 반응형 메인 화면, 드롭다운 내비게이션, 하위 페이지 및 공통 푸터
 - 소개/연구/연구지원/공지/연구소식/오시는 길, 구성원, 논문 화면
 - Supabase Auth 관리자 로그인과 DB 역할 검증
-- 게시글·고정 페이지·구성원·논문 생성·수정·삭제(기본 텍스트 에디터)
+- 홈페이지 배너 문구·배경 이미지·버튼 설정 및 사진 업로드
+- 게시글·고정 페이지·구성원·논문 생성·수정·공개 해제 및 복원
+- 페이지별 관리자 버튼, 페이지별 게시판, 교수/박사/석사/학부연구생/졸업생 구분
+- 자체 SVG 로고·파비콘·베이지안 분포 배경 (`public/assets/`)
 - SerpApi Scholar Author 검색/논문 검색/후보 선택/검토 상태 저장
 - Scholar 자동 동기화 Cron(일주일 1회, 실행 시 최대 3개 저자 프로필 처리)
 - 파일 10MB 이하 Supabase private Storage 업로드
 - 공개 논문/구성원/게시글 JSON 조회 API
 
 ## 아직 완료되지 않은 범위 (중요)
-- 원본 사이트의 픽셀 단위 일치, 실제 배너·로고·사진 자산 사용 권한 및 리치 애니메이션
-- 회원 및 논문 상세 편집 UX 개선, 조직도·연혁·센터·문서 전용 CRUD 화면/목록, 다운로드 서명 URL
+- 원본 사이트의 픽셀 단위 일치와 리치 애니메이션, 교수/학생의 실제 사진
+- 조직도·연혁·센터·문서의 전용 구조화 CRUD 화면 (현재 페이지 본문·게시판으로 관리) 및 PDF 공개 다운로드
 - Cite API 응답 조회는 구현. BibTeX 내보내기 URL의 실제 다운로드·영구 보관 및 논문별 자동 매칭은 미구현
 - Scholar 전체 페이지네이션/대량 작업 큐, 데이터 충돌 방지 및 수동 검토 UX 고도화
 - 다국어, 검색/페이지네이션, 변경 이력·감사 로그, 통합/보안 자동 테스트
 - 데이터베이스의 일관된 논문 deduplication/외부 API 과금 제한/모니터링
 
-이 저장소는 **완제품이 아니라 운영 환경 연결 전의 기능성 스타터**입니다. 실제 교수님 계정, 키, DB가 없으므로 현재 API 통합 테스트를 수행하지 않았습니다.
+관리자 권한을 가진 Supabase 계정으로 실제 CRUD 검증이 필요합니다. 환경변수만 설정하는 것으로 DB 테이블이나 관리자 계정이 자동 생성되지는 않습니다.
 
 ## 로컬 실행
 
@@ -38,7 +41,7 @@ http://localhost:3000 으로 접속. 환경변수 없이도 공개 페이지에 
 3. 해당 사용자의 auth.users UUID를 사용해 `profiles`에 `role='owner'` 행 추가 (SQL 마지막 주석 참고).
 4. Project URL 및 **anon/publishable key** 를 `NEXT_PUBLIC_...`로 설정. Secret key는 서버 전용. 환경변수 이름은 `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`를 사용합니다.
 5. `.env.local`에 `SERPAPI_API_KEY` 와 `CRON_SECRET` 지정.
-6. Supabase `lab-media` bucket은 private입니다. 업로드 파일을 공개하려면 승인 후 signed URL용 다운로드 API가 추가로 필요합니다.
+6. Supabase `lab-media` bucket은 private입니다. `/api/media/...`는 공개된 구성원 사진 또는 공개된 홈페이지 배너에서 참조한 파일만 signed URL로 전달합니다. 미게시 파일은 관리자만 접근할 수 있습니다.
 
 ## Vercel
 1. GitHub에 저장소를 push한 후 Vercel에서 Import Project.
@@ -47,7 +50,9 @@ http://localhost:3000 으로 접속. 환경변수 없이도 공개 페이지에 
 4. Cron 기능은 요금제 제약이 있을 수 있습니다. `vercel.json`의 weekly 스케줄을 확인하고 맞는 요금제로 배포.
 5. /admin/login 에서 권한 부여된 계정으로 로그인.
 
-**실제 도메인 배포는 아직 수행되지 않았습니다.** Vercel 계정, GitHub 연결, Supabase 및 SerpApi 키 제공이 필요합니다.
+운영 홈페이지: https://lab-website-eight-omega.vercel.app/
+
+현재 사용하는 환경변수는 `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `SERPAPI_API_KEY`, `CRON_SECRET`뿐입니다. 예전 키 이름으로 대체하지 않습니다.
 
 ## API 요약
 
@@ -70,6 +75,9 @@ http://localhost:3000 으로 접속. 환경변수 없이도 공개 페이지에 
 SerpApi의 `google_scholar_cite`는 인용 포맷을 제공하며 `google_scholar_author`는 저자의 논문 목록을 제공하는 별도 엔진입니다. Author citation ID와 Search result ID를 혼동하면 안 됩니다. 현재 구현에서는 인용 포맷 조회를 지원하지만 BibTeX 파일의 영구 보관은 지원하지 않습니다.
 
 ## 사실 확인
-연구실 명칭은 프로젝트 가칭입니다. 공식적으로 확인한 교수 연락처·호실은 전남대학교 통계학과 교수진 페이지입니다. 졸업생 명단, 논문, 프로젝트, 연구실 설립 연혁 등은 확인되지 않았으므로 임의 데이터를 게시하지 않았습니다.
+연구실 명칭은 프로젝트 가칭입니다. 공식적으로 확인한 교수 연락처·호실은 전남대학교 통계학과 교수진 페이지입니다. 박사학위/논문(2021)은 서울대학교 Bayesian Statistics Laboratory 졸업생 페이지(https://snubayes.wordpress.com/alumni/)를 확인했습니다. 학사·석사 및 상세 경력 기간은 확인되기 전까지 기재하지 않습니다. 졸업생 명단, 논문, 프로젝트, 연구실 설립 연혁 등은 확인되지 않았으므로 임의 데이터를 게시하지 않았습니다.
 
 원본 DSRI 사이트는 시각적/기능적 레퍼런스이며 타 사이트의 로고, 저작권이 있는 이미지, 문구를 그대로 포함하지 않습니다.
+
+## CMS 사용
+`/admin`에서 배너·페이지·게시글·구성원·논문을 관리합니다. 공개 홈페이지에 로그인된 관리자만 편집 버튼이 나타납니다. 페이지 본문은 페이지 경로(예: `about/greetings`)로 저장하고, 해당 페이지 게시판은 `page:about/greetings` 분류를 사용합니다. 사진 업로드 후 반드시 콘텐츠 저장을 눌러야 공개 참조가 반영됩니다. 삭제는 임시저장/비공개로 변경되며 재게시로 복원할 수 있습니다. 교수 이력 본문에는 `## 소제목`을 사용해 섹션을 나눌 수 있습니다.
