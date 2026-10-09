@@ -13,6 +13,6 @@ export default function PostActions({id}:{id:string}){
   if(path.startsWith('/notice/'))router.replace('/notice');else if(path.startsWith('/news/')&&!['/news/research','/news/academic','/news/events'].includes(path))router.replace('/news');
   router.refresh();
  }catch(e){setError(e instanceof Error?e.message:'삭제하지 못했습니다.')}finally{setBusy(false)}}
- if(deleted)return <p className="action-feedback" role="status">게시글을 삭제했습니다.</p>;
+ if(deleted)return null;
  return <div className="post-actions"><div className="action-buttons">{workspace?<button type="button" className="secondary-button" onClick={()=>workspace.open(id)}>수정</button>:<Link className="secondary-button" href={'/write?id='+id}>수정</Link>}<button type="button" className="danger-button" onClick={()=>{setError('');setConfirming(true)}}>삭제</button></div>{confirming&&<ConfirmDelete title="게시글을 삭제할까요?" description="게시글이 목록과 공개 페이지에서 삭제됩니다. 삭제한 글은 복원할 수 없습니다." busy={busy} error={error} onConfirm={remove} onCancel={()=>setConfirming(false)}/>}</div>;
 }

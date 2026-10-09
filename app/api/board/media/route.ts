@@ -1,3 +1,4 @@
+import {storageImageHeader} from '@/lib/image-transfer';
 import {NextRequest,NextResponse} from 'next/server';import {z} from 'zod';
 import {currentAccount,privilegedDb} from '@/lib/supabase';import {canWriteBoard} from '@/lib/permissions';import {imageTypes,imageLimit,ownImagePath,imageSignature} from '@/lib/media';import {allowGifUploads} from '@/lib/media-storage';
 const headers={'Cache-Control':'private, no-store'};
@@ -11,8 +12,8 @@ async function handle(req:NextRequest,verify:boolean){
  if(verify){const parsed=z.object({path:z.string().max(128)}).safeParse(raw);if(!parsed.success||!ownImagePath(account.user.id,parsed.data.path))return NextResponse.json({error:'본인이 업로드한 사진만 삽입할 수 있습니다.'},{status:400,headers});
  const path=parsed.data.path,bucket=storage.storage.from('lab-media');const {data:info,error:infoError}=await bucket.info(path);const size=info?.size??info?.metadata?.size??0,mime=info?.contentType||info?.metadata?.mimetype||'';
  if(infoError||!info||size<1||size>imageLimit||!imageTypes.includes(mime as typeof imageTypes[number]))return NextResponse.json({error:'지원하는 이미지와 10MB 이하 크기를 확인해주세요.'},{status:400,headers});
- const {data:file,error}=await bucket.download(path);if(error||!file||file.size>imageLimit||!imageSignature(new Uint8Array(await file.slice(0,12).arrayBuffer()),mime))return NextResponse.json({error:'올바른 이미지 파일을 선택해주세요.'},{status:400,headers});return NextResponse.json({url:'/api/media/'+path},{headers});}
+ const header=await storageImageHeader(storage,path);if(!imageSignature(header,mime))return NextResponse.json({error:'올바른 이미지 파일을 선택해주세요.'},{status:400,headers});return NextResponse.json({url:'/api/media/'+path},{headers});}
  const parsed=z.object({name:z.string().min(1).max(255),type:z.enum(imageTypes),size:z.number().int().min(1).max(imageLimit)}).safeParse(raw);if(!parsed.success)return NextResponse.json({error:'JPG, PNG, WebP, GIF 중 10MB 이하 파일을 선택해주세요.'},{status:400,headers});if(parsed.data.type==='image/gif')await allowGifUploads();
- const ext={'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif'}[parsed.data.type];const path=`${account.user.id}/${crypto.randomUUID()}.${ext}`;const {data,error}=await storage.storage.from('lab-media').createSignedUploadUrl(path);if(error||!data)throw Error('사진 업로드를 준비하지 못했습니다.');return NextResponse.json({path:data.path,token:data.token},{headers});
+ const ext={'image/jpeg':'jpg','image/png':'png','image/webp':'webp','image/gif':'gif'}[parsed.data.type];const path=`${account.user.id}/${crypto.randomUUID()}.${ext}`;const {data,error}=await storage.storage.from('lab-media').createSignedUploadUrl(path);if(error||!data)throw Error('사진 업로드를 준비하지 못했습니다.');return NextResponse.json({path:data.path,token:data.token,signedUrl:data.signedUrl},{headers});
  }catch(e){return NextResponse.json({error:e instanceof Error?e.message:'사진을 저장하지 못했습니다.'},{status:503,headers});}
 }

@@ -1,3 +1,4 @@
+import {storageImageHeader} from '@/lib/image-transfer';
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { currentAccount, privilegedDb } from '@/lib/supabase';
@@ -24,7 +25,7 @@ export async function POST(req: NextRequest) {
   const path = `${ctx.account.user.id}/${crypto.randomUUID()}.${ext}`;
   const { data, error } = await ctx.service.storage.from('lab-media').createSignedUploadUrl(path);
   if (error || !data) return NextResponse.json({ error: '사진 업로드를 준비하지 못했습니다. 잠시 후 다시 시도해주세요.' }, { status: 503, headers });
-  return NextResponse.json({ path: data.path, token: data.token }, { headers });
+  return NextResponse.json({ path: data.path, token: data.token, signedUrl:data.signedUrl }, { headers });
 }
 export async function PATCH(req: NextRequest) {
   const ctx = await context();
@@ -40,8 +41,8 @@ export async function PATCH(req: NextRequest) {
     const mime = info?.contentType || info?.metadata?.mimetype || '';
     if (infoError || !info || size < 1 || size > photoLimit || !photoTypes.includes(mime as typeof photoTypes[number]))
       return NextResponse.json({ error: '업로드한 사진의 형식 또는 크기를 확인해주세요.' }, { status: 400, headers });
-    const { data: file, error } = await bucket.download(path);
-    if (error || !file || file.size > photoLimit || !photoSignature(new Uint8Array(await file.slice(0,12).arrayBuffer()), mime))
+    let header:Uint8Array;try{header=await storageImageHeader(ctx.service,path)}catch{return NextResponse.json({error:'사진을 검증하지 못했습니다. 다시 시도해주세요.'},{status:503,headers})}
+    if (!photoSignature(header, mime))
       return NextResponse.json({ error: '올바른 이미지 파일을 선택해주세요.' }, { status: 400, headers });
   }
   const photo_url = path ? '/api/media/' + path : null;
