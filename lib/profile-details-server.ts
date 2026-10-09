@@ -1,0 +1,2 @@
+import type {SupabaseClient} from '@supabase/supabase-js';import {profileDetails,publicProfileDetails,profileDetailsSlug} from './profile-details';
+export async function publishProfileDetails(db:SupabaseClient,memberId:string,value:unknown,visible=true){const details=publicProfileDetails(profileDetails(value));return db.from('pages').upsert({slug:profileDetailsSlug(memberId),title:'구성원 소속 정보',body:JSON.stringify(details),status:visible?'published':'draft'},{onConflict:'slug'})}

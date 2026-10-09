@@ -1,0 +1,4 @@
+const format='bsl-post-v1';
+export function postMetadata(post:any){let meta:any={};try{const parsed=JSON.parse(post.excerpt||'');if(parsed.format===format)meta=parsed}catch{}return {...post,excerpt:typeof meta.text==='string'?meta.text:post.excerpt||'',author_name:typeof meta.author==='string'?meta.author:post.author_name||'연구실',updated_at:typeof meta.updatedAt==='string'?meta.updatedAt:post.updated_at||post.created_at||post.published_at,post_number:typeof meta.number==='string'?meta.number:post.id?.slice(0,8)}}
+export function postExcerpt(text:string,author:string,updatedAt:string,number:string){return JSON.stringify({format,text,author,updatedAt,number})}
+export function postDate(value?:string|null){if(!value)return '—';const date=new Date(value);return Number.isNaN(date.getTime())?'—':date.toLocaleDateString('ko-KR',{timeZone:'Asia/Seoul',year:'numeric',month:'2-digit',day:'2-digit'})}
