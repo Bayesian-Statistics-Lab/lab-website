@@ -1,0 +1,3 @@
+export function boardSize(value:unknown,gallery=false){const sizes=gallery?[6,12]:[15,30,50];return sizes.includes(Number(value))?Number(value):sizes[0]}
+export function boardPage(value:unknown,total:number,size:number){const requested=Number(value);return Math.max(1,Math.min(Number.isFinite(requested)?Math.floor(requested):1,Math.max(1,Math.ceil(total/size))))}
+export function postNumbers(posts:{id:string;category:string}[]){const counters:Record<string,number>={},numbers:Record<string,number>={};for(const post of posts){const board=post.category==='notice'?'notice':['news','research','academic','events'].includes(post.category)?'news':post.category;numbers[post.id]=counters[board]=(counters[board]||0)+1}return numbers}

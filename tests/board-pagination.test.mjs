@@ -1,0 +1,5 @@
+import test from 'node:test';import assert from 'node:assert/strict';import {boardSize,boardPage,postNumbers} from '../lib/board-pagination.ts';import {professorDetailsSchema} from '../lib/professor-details.ts';
+test('board and gallery support their own page sizes with valid defaults',()=>{assert.equal(boardSize(50),50);assert.equal(boardSize(12,true),12);assert.equal(boardSize(50,true),6);assert.equal(boardSize('bad'),15)});
+test('pagination clamps invalid or removed last pages',()=>{assert.equal(boardPage(5,31,15),3);assert.equal(boardPage(-1,31,15),1);assert.equal(boardPage(Infinity,31,15),1);assert.equal(boardPage(2,0,6),1)});
+test('post numbers remain consistent between combined news and category views',()=>{const numbers=postNumbers([{id:'a',category:'news'},{id:'b',category:'notice'},{id:'c',category:'events'},{id:'d',category:'academic'}]);assert.deepEqual(numbers,{a:1,b:1,c:2,d:3})});
+test('professor details reject unsafe website URLs and preserve optional empty fields',()=>{assert.equal(professorDetailsSchema.safeParse({website:'javascript:alert(1)'}).success,false);assert.equal(professorDetailsSchema.parse({website:'',career:''}).career,'')});
