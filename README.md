@@ -36,7 +36,7 @@ http://localhost:3000 으로 접속. 환경변수 없이도 공개 페이지에 
 1. Supabase 프로젝트 생성 후 SQL Editor에서 `supabase/001_schema.sql` 실행.
 2. Authentication에서 Email 로그인 사용, 관리자 이메일 사용자를 직접 초대/생성하고 공개 회원가입 비활성화.
 3. 해당 사용자의 auth.users UUID를 사용해 `profiles`에 `role='owner'` 행 추가 (SQL 마지막 주석 참고).
-4. Project URL 및 **anon/publishable key** 를 `NEXT_PUBLIC_...`로 설정. Service role은 서버 전용.
+4. Project URL 및 **anon/publishable key** 를 `NEXT_PUBLIC_...`로 설정. Secret key는 서버 전용. 환경변수 이름은 `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`를 사용합니다.
 5. `.env.local`에 `SERPAPI_API_KEY` 와 `CRON_SECRET` 지정.
 6. Supabase `lab-media` bucket은 private입니다. 업로드 파일을 공개하려면 승인 후 signed URL용 다운로드 API가 추가로 필요합니다.
 
