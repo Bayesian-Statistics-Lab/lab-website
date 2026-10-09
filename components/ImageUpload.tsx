@@ -1,4 +1,14 @@
 "use client";
 import {useEffect,useState} from 'react';
 import {uploadFile} from '@/lib/upload';
-export default function ImageUpload({onUploaded}:{onUploaded:(url:string)=>void}){const [msg,setMsg]=useState(''),[busy,setBusy]=useState(false),[preview,setPreview]=useState('');useEffect(()=>()=>{if(preview)URL.revokeObjectURL(preview)},[preview]);return <div className="upload-field"><label>이미지 업로드<input type="file" accept="image/jpeg,image/png,image/webp" disabled={busy} onChange={async e=>{const file=e.target.files?.[0];e.target.value='';if(!file)return;setBusy(true);setMsg('파일 확인 중…');try{const result=await uploadFile(file,setMsg);setPreview(URL.createObjectURL(file));onUploaded(result.url);setMsg('업로드 완료. 아래 저장 버튼을 눌러 적용하세요.');}catch(e){setMsg(e instanceof Error?e.message:'업로드 실패');}finally{setBusy(false)}}}/></label><small>JPG, PNG, WebP · 최대 10MB</small>{preview&&<img className="upload-preview" src={preview} alt="업로드한 이미지 미리보기"/>}<span role="status" aria-live="polite">{msg}</span></div>}
+type Props={onUploaded:(url:string,path:string)=>void|Promise<void>;endpoint?:string;maxBytes?:number;instant?:boolean;showPreview?:boolean;disabled?:boolean;onBusyChange?:(busy:boolean)=>void};
+export default function ImageUpload({onUploaded,endpoint,maxBytes=10*1024*1024,instant=false,showPreview=true,disabled=false,onBusyChange}:Props){
+  const [msg,setMsg]=useState(''),[busy,setBusy]=useState(false),[preview,setPreview]=useState(''),[failed,setFailed]=useState(false);
+  useEffect(()=>()=>{if(preview)URL.revokeObjectURL(preview)},[preview]);
+  return <div className="upload-field"><label>사진 선택<input type="file" accept="image/jpeg,image/png,image/webp" disabled={busy||disabled} onChange={async e=>{
+    const file=e.target.files?.[0];e.target.value='';if(!file)return;setBusy(true);onBusyChange?.(true);setFailed(false);setMsg('파일 확인 중…');
+    try{const result=await uploadFile(file,setMsg,{endpoint,maxBytes});setMsg('사진을 적용하고 있습니다…');await onUploaded(result.url,result.path);if(showPreview)setPreview(URL.createObjectURL(file));setMsg(instant?'프로필 사진을 저장했습니다.':'업로드 완료. 저장 버튼을 눌러 적용해주세요.');}
+    catch(e){setFailed(true);setMsg(e instanceof Error?e.message:'사진 업로드에 실패했습니다.');}
+    finally{setBusy(false);onBusyChange?.(false);}
+  }}/></label><small>JPG, PNG, WebP · 최대 {maxBytes/1024/1024}MB</small>{preview&&<img className="upload-preview" src={preview} alt="선택한 이미지 미리보기"/>}<p className={'form-feedback '+(failed?'error':'')} role="status" aria-live="polite">{msg}</p></div>;
+}

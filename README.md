@@ -102,3 +102,9 @@ Supabase Authentication의 Site URL은 운영 도메인, Redirect URLs에는 `ht
 파일 업로드는 관리자 API에서 서명 토큰만 발급한 뒤 브라우저에서 Supabase Storage로 직접 전송합니다. 파일 본문은 Vercel 함수를 통과하지 않습니다. 최대 10MB와 형식을 검사하며, 미리보기·전송 상태·경로 복사를 지원합니다. 공개 이미지의 승인된 참조와 서명 URL은 짧게 캐시하고, 미게시 파일의 관리자 응답은 캐시하지 않습니다.
 
 졸업생 계정 구분과 원자적 프로필 저장에는 `supabase/003_alumni.sql` 적용이 필요합니다. 신규 설치는 001 → 002 → 003 순서로 실행하세요. 기존 002 적용 환경은 003만 실행하세요. 폼·API·DB 모두 Alumni를 허용하며 이름·과정·Scholar 정보가 일부만 저장되는 상황을 방지합니다.
+
+## UI, email verification and member photos
+
+Pretendard v1.3.9 is self-hosted under `public/assets/fonts` with its OFL license. Public pages, accounts and CMS share the tokens and components in `app/globals.css`. Brand assets are original layered BS vectors and matching PNG favicons.
+
+See `docs/AUTH_AND_PROFILE.md` for the exact Supabase Site URL, redirect allowlist and confirmation email template, plus photo ownership and migration requirements. Callback supports PKCE code, email token hash and legacy implicit sessions; confirmation errors include a resend flow.
