@@ -1,0 +1,5 @@
+"use client";
+import Link from 'next/link';
+import {useState} from 'react';
+import {useRouter} from 'next/navigation';
+export default function PostActions({id}:{id:string}){const router=useRouter();const [message,setMessage]=useState(''),[busy,setBusy]=useState(false),[confirming,setConfirming]=useState(false);return <div className="post-actions"><Link className="secondary-button" href={'/write?id='+id}>수정</Link>{!confirming?<button className="danger-button" onClick={()=>setConfirming(true)}>삭제</button>:<><span>이 글의 공개를 해제할까요?</span><button className="danger-button" disabled={busy} onClick={async()=>{setBusy(true);try{const r=await fetch('/api/board',{method:'DELETE',headers:{'content-type':'application/json'},body:JSON.stringify({id})});const j=await r.json();if(!r.ok)throw Error(j.error);router.refresh();setMessage('공개를 해제했습니다. 내 글 목록에서 복원할 수 있습니다.');setConfirming(false);}catch(e){setMessage(e instanceof Error?e.message:'삭제 실패')}finally{setBusy(false)}}}>삭제 확인</button><button className="secondary-button" onClick={()=>setConfirming(false)}>취소</button></>}<span role="status">{message}</span></div>}

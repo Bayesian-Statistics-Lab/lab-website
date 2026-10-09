@@ -81,3 +81,17 @@ SerpApi의 `google_scholar_cite`는 인용 포맷을 제공하며 `google_schola
 
 ## CMS 사용
 `/admin`에서 배너·페이지·게시글·구성원·논문을 관리합니다. 공개 홈페이지에 로그인된 관리자만 편집 버튼이 나타납니다. 페이지 본문은 페이지 경로(예: `about/greetings`)로 저장하고, 해당 페이지 게시판은 `page:about/greetings` 분류를 사용합니다. 사진 업로드 후 반드시 콘텐츠 저장을 눌러야 공개 참조가 반영됩니다. 삭제는 임시저장/비공개로 변경되며 재게시로 복원할 수 있습니다. 교수 이력 본문에는 `## 소제목`을 사용해 섹션을 나눌 수 있습니다.
+
+## 회원가입과 역할별 권한
+`supabase/002_membership.sql`을 Supabase SQL Editor에서 적용해야 회원가입과 게시판 작성자 권한이 활성화됩니다. 기존 콘텐츠를 삭제하지 않으며 재실행할 수 있습니다. 학생은 `/register`에서 이름·과정·Scholar 프로필을 입력하고 이메일을 인증합니다. 관리자는 `/admin?view=membership`에서 승인합니다. 승인 후 석사/박사/학부연구생 구분에 맞춰 구성원 페이지에 표시됩니다.
+
+- 관리자/owner: 전체 게시판·배너·페이지·구성원·논문·가입 승인 관리
+- 승인된 구성원: 소식·학술활동·행사 게시판 작성 및 본인 글 수정/공개 해제
+- 승인 대기: 본인 프로필 관리. 공개 구성원 등록 및 글쓰기는 승인 후 가능
+- 방문자: 공개 콘텐츠 조회
+
+회원가입의 과정 선택은 사이트 관리자 권한을 변경하지 않습니다. 프로필의 `role`은 접근 권한, `academic_role` 및 구성원의 `role`은 과정 구분입니다. 본인 글 권한을 API와 Supabase RLS에서 함께 검사합니다. 이메일은 가입자가 공개를 선택한 경우에만 구성원 페이지에 표시합니다. 회원가입은 서버에서 설정 상태를 확인한 뒤 활성화됩니다.
+
+Supabase Authentication의 Site URL은 운영 도메인, Redirect URLs에는 `https://lab-website-eight-omega.vercel.app/auth/callback`을 추가하세요. Email/Password 회원가입이 허용되어야 하며 확인 메일 발송 설정이 필요합니다. 인증된 구성원의 Scholar 프로필은 관리자 승인 시 기존 주간 동기화 대상에 연결됩니다.
+
+검증: `npm run typecheck`, `npm run build`, `npm test`. 권한 검사와 Scholar URL 입력의 경계를 테스트합니다. 실제 회원가입·메일 인증·승인 연동 검증은 DB 설정을 적용한 뒤 진행해야 합니다.

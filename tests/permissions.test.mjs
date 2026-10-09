@@ -1,0 +1,11 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {canWriteBoard,canManagePost,scholarId} from '../lib/permissions.ts';
+const member={role:'viewer',approved:true,user:{id:'member-a'}};
+const pending={...member,approved:false};
+const admin={role:'admin',approved:true,user:{id:'admin'}};
+test('visitors and pending accounts cannot publish',()=>{for(const category of ['news','academic','events','notice','research','page:about/greetings']){assert.equal(canWriteBoard(null,category),false);assert.equal(canWriteBoard(pending,category),false);}});
+test('approved members write only the allowed member boards',()=>{for(const category of ['news','academic','events'])assert.equal(canWriteBoard(member,category),true);for(const category of ['notice','research','page:about/greetings'])assert.equal(canWriteBoard(member,category),false);});
+test('members cannot change another author or a restricted board',()=>{assert.equal(canManagePost(member,{category:'news',author_id:'member-a'}),true);assert.equal(canManagePost(member,{category:'news',author_id:'member-b'}),false);assert.equal(canManagePost(member,{category:'notice',author_id:'member-a'}),false);assert.equal(canManagePost(pending,{category:'news',author_id:'member-a'}),false);});
+test('administrators manage all boards and legacy posts',()=>{assert.equal(canWriteBoard(admin,'notice'),true);assert.equal(canWriteBoard(admin,'page:research'),true);assert.equal(canManagePost(admin,{category:'notice',author_id:null}),true);});
+test('Scholar normalizer accepts Google profiles and rejects unrelated links',()=>{assert.equal(scholarId('https://scholar.google.com/citations?user=AbcD_123&hl=en'),'AbcD_123');assert.equal(scholarId('AbcD_123'),'AbcD_123');assert.equal(scholarId(''), '');assert.equal(scholarId('https://example.com/?user=AbcD_123'),null);assert.equal(scholarId('https://scholar.google.com.evil.test/?user=AbcD_123'),null);assert.equal(scholarId('javascript:alert(1)'),null);});

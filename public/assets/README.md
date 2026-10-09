@@ -1,1 +1,6 @@
-Original vector assets for Bayesian Statistics Laboratory. Prior and posterior density curves represent learning from data; the light dot indicates the posterior mode. Brand: brand/lab-mark.svg (logo and favicon). Homepage artwork: illustrations/posterior.svg. These assets were created for this project and do not use another institution's logo.
+# Research lab assets
+
+- `brand/lab-mark.svg`: geometric B monogram, evergreen/ivory with a gold evidence point. Original design for BSL; used in navigation and favicon.
+- `brand/lab-wordmark.svg`: horizontal institutional wordmark.
+- `illustrations/posterior.svg`: original prior/posterior density background.
+- `people/kwangmin-lee.webp`: Kwangmin Lee portrait from Chonnam National University Statistics faculty page, https://stat.jnu.ac.kr/upload/profInfo/temp_1663118548462100.png . Institutional portrait used at the user's request; university/source retains image rights.

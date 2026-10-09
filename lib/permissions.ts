@@ -1,0 +1,5 @@
+export const memberBoards=['news','academic','events'];
+export function isAdministrator(role?:string){return role==='admin'||role==='owner'}
+export function canWriteBoard(account:{role:string;approved:boolean}|null,category:string){return !!account&&(isAdministrator(account.role)||account.approved&&memberBoards.includes(category))}
+export function canManagePost(account:{role:string;approved:boolean;user:{id:string}}|null,post:{author_id?:string|null;category:string}){return !!account&&(isAdministrator(account.role)||account.approved&&post.author_id===account.user.id&&memberBoards.includes(post.category))}
+export function scholarId(value:string){if(!value.trim())return '';if(/^[A-Za-z0-9_-]{6,64}$/.test(value.trim()))return value.trim();try{const url=new URL(value);if(url.protocol!=='https:'||!/^scholar\.google\.(com|co\.kr|co\.uk|co\.jp|com\.au|de|fr|ca|es|it|nl|ch)$/.test(url.hostname))return null;const id=url.searchParams.get('user');return id&&/^[A-Za-z0-9_-]{6,64}$/.test(id)?id:null;}catch{return null}}
