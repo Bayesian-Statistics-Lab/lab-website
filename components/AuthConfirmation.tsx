@@ -29,6 +29,9 @@ export default function AuthConfirmation() {
         const { data: { user } } = await client.auth.getUser();
         if (!user?.email_confirmed_at) throw Error('인증 메일의 링크를 열어주세요. 이미 인증을 완료했다면 로그인할 수 있습니다.');
       }
+      const application = await fetch('/api/registration', {method:'POST'});
+      const result = await application.json();
+      if (!application.ok) throw Error(result.error);
       window.location.replace('/account');
     } catch (error) {
       setState('error'); setMessage(error instanceof Error ? error.message : confirmationError());
