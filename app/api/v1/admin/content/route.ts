@@ -1,8 +1,8 @@
 import {postMetadata,postExcerpt} from '@/lib/post-metadata';
-import {deleteRecord} from '@/lib/deletion';
+import {deleteRecord,deleteMemberAccount} from '@/lib/deletion';
 import {normalizeBody,bodyExcerpt} from '@/lib/rich-text';
 import {NextRequest,NextResponse} from 'next/server';
-import {requireAdmin} from '@/lib/supabase';
+import {requireAdmin,privilegedDb} from '@/lib/supabase';
 import {revalidatePath,revalidateTag} from 'next/cache';
 import {z} from 'zod';import {contentSchema as schema} from '@/lib/content-schema';
 const tables=['posts','pages','members','publications'] as const;
@@ -16,13 +16,15 @@ else if(p.type==='publications'){data={title:p.title,status:p.status};for(const 
 else if(p.type==='pages'){if(!p.slug)return NextResponse.json({error:'페이지 경로가 필요합니다.'},{status:400});data={title:p.title,slug:p.slug,body:normalizeBody(p.body),status:p.status,updated_at:new Date().toISOString()};if(p.lead!==undefined)data.lead=p.lead;}
 else {let original:any=null;if(updating){const {data:record}=await ctx.db.from('posts').select('*').eq('id',p.id!).maybeSingle();original=record;}let author=original?postMetadata(original).author_name:ctx.profile?.display_name||ctx.user.user_metadata.display_name||'연구실';if(original?.author_id&&author==='연구실'){const {data:profile}=await ctx.db.from('profiles').select('display_name').eq('id',original.author_id).maybeSingle();author=profile?.display_name||author;}data={title:p.title,body:normalizeBody(p.body),excerpt:postExcerpt(bodyExcerpt(p.body),author,new Date().toISOString(),original?postMetadata(original).post_number:crypto.randomUUID().slice(0,8)),status:p.status};if(!updating)data.author_id=ctx.user.id;if(p.slug)data.slug=p.slug;else if(!updating)data.slug=crypto.randomUUID();if(p.category)data.category=p.category;if(p.status==='published'){if(!updating)data.published_at=new Date().toISOString();else {const {data:old}=await ctx.db.from('posts').select('published_at').eq('id',p.id!).single();if(!old?.published_at)data.published_at=new Date().toISOString();}}}
 const q=ctx.db.from(p.type);const result=updating?await q.update(data).eq('id',p.id!).select().single():await q.insert(data).select().single();if(!result.error&&p.type==='members'&&p.professor_details&&['Professor','Principal Investigator'].includes(p.role||'')){const details=await ctx.db.from('pages').upsert({slug:'settings/professor/'+result.data.id,title:'교수 소개 설정',body:JSON.stringify(p.professor_details),status:p.status,updated_at:new Date().toISOString()},{onConflict:'slug'});if(details.error)return NextResponse.json({error:'구성원은 저장했지만 교수 이력 저장에 실패했습니다. 다시 저장해주세요.'},{status:500})}if(!result.error&&p.type==='members'&&p.alumni_details){const saved=await ctx.db.from('pages').upsert({slug:'settings/alumni/'+result.data.id,title:'졸업생 현재 소속',body:JSON.stringify(p.alumni_details),status:p.status},{onConflict:'slug'});if(saved.error)return NextResponse.json({error:'졸업생 소속 저장에 실패했습니다. 다시 저장해주세요.'},{status:500})}if(!result.error&&p.type==='publications'&&p.summary!==undefined){const saved=await ctx.db.from('pages').upsert({slug:'settings/paper/'+result.data.id,title:'논문 요약',body:JSON.stringify({summary:p.summary}),status:p.status},{onConflict:'slug'});if(saved.error)return NextResponse.json({error:'논문 요약 저장에 실패했습니다. 다시 저장해주세요.'},{status:500})}if(!result.error)refresh();return NextResponse.json(result.error?{error:result.error.message}:{data:result.data},{status:result.error?400:200})}
-// Posts and member profiles are removed; other content retains its draft workflow.
+// Linked members include their account and approval; other content retains its draft workflow.
 export async function DELETE(req:NextRequest){
  const ctx=await requireAdmin();if(!ctx)return NextResponse.json({error:'관리자 권한이 필요합니다.'},{status:401});
  const p=z.object({type:z.enum(tables),id:z.string().uuid()}).safeParse(await req.json().catch(()=>null));if(!p.success)return NextResponse.json({error:'삭제할 항목을 확인해주세요.'},{status:400});
  const {type,id}=p.data;
- const result=type==='posts'||type==='members'?await deleteRecord(ctx.db,type,id):await ctx.db.from(type).update({status:'draft'}).eq('id',id).select('id').maybeSingle();
- if(result.error)return NextResponse.json({error:'항목을 처리하지 못했습니다. 잠시 후 다시 시도해주세요.'},{status:500});
+ const service=type==='members'?privilegedDb():null;
+ if(type==='members'&&!service)return NextResponse.json({error:'계정 삭제 연결을 확인할 수 없습니다.'},{status:503});
+ const result=type==='members'?await deleteMemberAccount(service!,id):type==='posts'?await deleteRecord(ctx.db,type,id):await ctx.db.from(type).update({status:'draft'}).eq('id',id).select('id').maybeSingle();
+ if(result.error)return NextResponse.json({error:type==='members'?'구성원 삭제를 완료하지 못했습니다. 관리자 계정은 삭제할 수 없으며 탈퇴 설정 SQL(004_account_withdrawal.sql)이 필요합니다.':'항목을 처리하지 못했습니다. 잠시 후 다시 시도해주세요.'},{status:500});
  if(!result.data)return NextResponse.json({error:'항목을 찾을 수 없거나 권한이 없습니다.'},{status:404});
  refresh();return NextResponse.json({ok:true});
 }

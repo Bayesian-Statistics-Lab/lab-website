@@ -14,6 +14,6 @@ export async function ensureMemberApplication(db:SupabaseClient,user:User){
  if(error)throw Error('가입 상태를 확인하지 못했습니다.');
  if(profile.role!=='viewer')return;
  const scholar=scholarId(String(user.user_metadata.scholar_author_id||''));
- const {error:memberError}=await db.from('members').upsert({user_id:user.id,name,name_en:String(user.user_metadata.name_en||'').slice(0,100),role,bio:String(user.user_metadata.bio||'').slice(0,5000),email:user.user_metadata.public_email===true?user.email:null,scholar_author_id:scholar||null,is_visible:Boolean(user.email_confirmed_at&&profile.membership_status==='approved')},{onConflict:'user_id',ignoreDuplicates:true});
+ const {error:memberError}=await db.from('members').upsert({user_id:user.id,name,name_en:String(user.user_metadata.name_en||'').slice(0,100),role,bio:String(user.user_metadata.bio||'').slice(0,5000),email:user.user_metadata.public_email===true?user.email:null,scholar_author_id:scholar||null,is_visible:profile.membership_status==='approved'},{onConflict:'user_id',ignoreDuplicates:true});
  if(memberError)throw Error('구성원 프로필을 연결하지 못했습니다. 관리자에게 문의해주세요.');
 }
