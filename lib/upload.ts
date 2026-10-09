@@ -1,10 +1,10 @@
 "use client";
 export const maxUploadBytes=10*1024*1024;
-export async function uploadFile(file:File,onStage?:(stage:string)=>void,{endpoint='/api/v1/admin/media',maxBytes=maxUploadBytes}:{endpoint?:string;maxBytes?:number}={}) {
-  if(!['image/jpeg','image/png','image/webp','application/pdf'].includes(file.type))throw Error('JPG, PNG, WebP 또는 PDF 파일을 선택해주세요.');
+export async function uploadFile(file:File,onStage?:(stage:string)=>void,{endpoint='/api/v1/admin/media',maxBytes=maxUploadBytes,category}:{endpoint?:string;maxBytes?:number;category?:string}={}) {
+  if(!['image/jpeg','image/png','image/webp','image/gif','application/pdf'].includes(file.type))throw Error('JPG, PNG, WebP, GIF 또는 PDF 파일을 선택해주세요.');
   if(file.size===0||file.size>maxBytes)throw Error(`파일은 ${maxBytes/1024/1024}MB 이하로 선택해주세요.`);
   onStage?.('업로드 연결 중…');
-  const response=await fetch(endpoint,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({name:file.name,type:file.type,size:file.size})});
+  const response=await fetch(endpoint,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({name:file.name,type:file.type,size:file.size,category})});
   const data=await response.json().catch(()=>({error:'업로드 연결 응답을 확인할 수 없습니다.'}));
   if(!response.ok)throw Error(data.error||'업로드 연결에 실패했습니다.');
   onStage?.('파일 전송 중…');

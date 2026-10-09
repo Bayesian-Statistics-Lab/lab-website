@@ -1,0 +1,2 @@
+import {NextResponse} from 'next/server';import {requireAdmin} from '@/lib/supabase';
+export async function GET(){const admin=await requireAdmin();if(!admin)return NextResponse.json({error:'관리자 로그인이 필요합니다.'},{status:401});const results=await Promise.all(['posts','members','publications'].map(t=>admin.db.from(t).select('id',{count:'exact',head:true})));return NextResponse.json({counts:results.map(r=>r.count)},{headers:{'Cache-Control':'private, no-store'}})}
