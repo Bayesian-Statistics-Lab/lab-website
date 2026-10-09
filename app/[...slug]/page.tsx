@@ -11,7 +11,7 @@ export const revalidate=3600;
 export const dynamic='auto';
 export async function generateStaticParams(){return [...Object.keys(sections),'people','publications','notice','news','location'].map(path=>({slug:path.split('/')}));}
 
-export default async function GenericPage({params,searchParams}:{params:Promise<{slug:string[]}>;searchParams:Promise<{page?:string;size?:string}>}){const {slug}=await params;const path=slug.join('/');const section=sections[path];let title=section?.title||({people:'구성원',publications:'논문 목록',notice:'공지사항',news:'연구실 소식',location:'오시는 길'} as Record<string,string>)[path];const postBase=path.startsWith('notice/')?'notice':path.startsWith('news/')?'news':null;
+export default async function GenericPage({params,searchParams}:{params:Promise<{slug:string[]}>;searchParams:Promise<{page?:string;size?:string}>}){const {slug}=await params;const path=slug.join('/');const section=sections[path];let title=section?.title||({people:'구성원',publications:'논문 목록',notice:'공지사항',news:'전체 소식',location:'오시는 길'} as Record<string,string>)[path];const postBase=path.startsWith('notice/')?'notice':path.startsWith('news/')?'news':null;
 const isPosts=['notice','news'].includes(path)||['news/research','news/academic','news/events'].includes(path);const postType=path==='notice'?'notice':path==='news/research'?'research':path==='news/academic'?'academic':path==='news/events'?'events':'news';
 let post:any=null;if(postBase&&!isPosts){post=await publishedPost(slug[1],postBase==='notice'?'notice':undefined);if(!post)notFound();title=post.title}
 if(!title && !postBase && !path.startsWith('people/') && !path.startsWith('publications/'))notFound();
