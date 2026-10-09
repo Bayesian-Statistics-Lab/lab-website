@@ -10,3 +10,6 @@ export async function deleteRecord(db:SupabaseClient,type:'posts'|'members',id:s
   if(authorId)query=query.eq('author_id',authorId);
   return query.select('id').maybeSingle();
 }
+
+// The schema cascades publication deletion to member links and Scholar external IDs.
+export async function deletePublications(db:SupabaseClient,ids:string[]){return db.from('publications').delete().in('id',ids).select('id')}
