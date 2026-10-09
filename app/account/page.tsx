@@ -8,7 +8,7 @@ import SignOut from '@/components/SignOut';
 export const dynamic='force-dynamic';
 export default async function Account(){
   const account=await currentAccount();
-  if(!account)return <main className="account-wrap auth-wrap"><p className="kicker">MY ACCOUNT</p><h1>로그인이 필요합니다</h1><section className="auth-card"><p className="muted">로그인하면 내 프로필과 게시글을 관리할 수 있습니다.</p><Link className="primary" href="/admin/login">로그인</Link><div className="auth-links"><Link href="/register">구성원 회원가입</Link></div></section></main>;
+  if(!account)return <main className="account-wrap auth-wrap"><p className="kicker">MY ACCOUNT</p><h1>로그인이 필요합니다</h1><section className="auth-card"><p className="muted">로그인하면 내 프로필과 게시글을 관리할 수 있습니다.</p><Link className="primary" href="/admin/login?next=%2Faccount">로그인</Link><div className="auth-links"><Link href="/register">구성원 회원가입</Link></div></section></main>;
   const [memberResult,postsResult]=await Promise.all([
     account.db.from('members').select('*').eq('user_id',account.user.id).maybeSingle(),
     account.db.from('posts').select('id,title,status,category,author_id').eq('author_id',account.user.id).order('created_at',{ascending:false}),

@@ -1,0 +1,9 @@
+'use client';
+import {useEffect,useState} from 'react';import Link from 'next/link';
+type Paper={id:string;title:string;authors:string[];year:number|null;venue:string|null;doi:string|null;citation_count:number|null};
+export default function PublicationsList({papers}:{papers:Paper[]}){
+const [query,setQuery]=useState(''),[year,setYear]=useState('');
+useEffect(()=>{const read=()=>{const params=new URLSearchParams(window.location.search);setQuery(params.get('q')||'');setYear(params.get('year')||'')};read();window.addEventListener('popstate',read);return()=>window.removeEventListener('popstate',read)},[]);
+const filtered=papers.filter(p=>(!query||[p.title,...(p.authors||[])].join(' ').toLowerCase().includes(query.toLowerCase()))&&(!year||String(p.year)===year));
+return <><form className="filterbar" onSubmit={e=>{e.preventDefault();const params=new URLSearchParams();if(query)params.set('q',query);if(year)params.set('year',year);window.history.replaceState(null,'',window.location.pathname+(params.size?'?'+params.toString():''))}}><label>제목 / 저자<input className="field" value={query} onChange={e=>setQuery(e.target.value)} placeholder="논문 제목 또는 저자 검색"/></label><label>발행연도<select className="field" value={year} onChange={e=>setYear(e.target.value)}><option value="">전체 연도</option>{Array.from(new Set(papers.map(p=>p.year).filter(Boolean))).sort((a,b)=>Number(b)-Number(a)).map(y=><option key={y!} value={y!}>{y}</option>)}</select></label><button className="secondary-button">검색</button></form><p className="search-help" role="status">{filtered.length}개 논문</p>{filtered.map(p=><div className="paper" key={p.id}><Link href={'/publications/'+p.id}><h3>{p.title}</h3></Link><p>{(p.authors||[]).join(', ')} · {p.venue||'Publication'} · {p.year||'연도 미상'}</p><p>인용 {p.citation_count??'—'}회 {p.doi&&<> · DOI {p.doi}</>}</p></div>)}{!filtered.length&&<div className="empty">{papers.length?'검색 결과가 없습니다. 검색어 또는 연도를 변경해주세요.':'등록된 논문이 없습니다.'}</div>}</>;
+}
