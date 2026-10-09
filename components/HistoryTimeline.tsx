@@ -1,0 +1,2 @@
+import {readHistory} from '@/lib/site-settings';import RichText from './RichText';
+export default function HistoryTimeline({body}:{body:string}){const entries=readHistory(body);if(entries===null)return <RichText body={body}/>;return entries.length?<ol className="history-timeline">{entries.map((entry,i)=><li key={i}><h3>{entry.date}</h3><ul>{entry.events.map((event,j)=><li key={j}>{event}</li>)}</ul></li>)}</ol>:<p className="muted">등록된 연혁이 없습니다.</p>}
