@@ -1,0 +1,1 @@
+import Link from 'next/link';export default function NotFound(){return <main className="container section"><h1>페이지를 찾을 수 없습니다.</h1><p>주소를 확인하거나 메인 화면으로 이동해주세요.</p><Link className="more" href="/">홈으로 →</Link></main>}

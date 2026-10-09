@@ -1,0 +1,5 @@
+import { publicDb } from './supabase';
+export async function publishedPosts(category?:string){const db=publicDb();if(!db)return [];let q=db.from('posts').select('id,title,slug,category,excerpt,body,published_at').eq('status','published').order('published_at',{ascending:false}).limit(30);if(category)q=q.eq('category',category);const {data}=await q;return data||[]}
+export async function publishedPapers(){const db=publicDb();if(!db)return [];const {data}=await db.from('publications').select('id,title,authors,year,venue,doi,paper_url,citation_count').eq('status','published').order('year',{ascending:false}).limit(100);return data||[]}
+export async function members(){const db=publicDb();if(!db)return [];const {data}=await db.from('members').select('id,name,name_en,role,bio,email,photo_url,scholar_author_id').eq('is_visible',true).order('sort_order');return data||[]}
+export async function page(slug:string){const db=publicDb();if(!db)return null;const {data}=await db.from('pages').select('title,lead,body').eq('slug',slug).eq('status','published').maybeSingle();return data}

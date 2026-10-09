@@ -1,0 +1,1 @@
+export default function PageHero({title,eyebrow='BAYESIAN STATISTICS LAB'}:{title:string;eyebrow?:string}){return <div className="page-hero"><div className="container"><span className="eyebrow">{eyebrow}</span><h1>{title}</h1><div className="hero-rule"/></div></div>}

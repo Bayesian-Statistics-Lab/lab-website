@@ -1,0 +1,1 @@
+import {NextRequest,NextResponse} from 'next/server';import {publishedPosts} from '@/lib/data';export async function GET(req:NextRequest){const category=req.nextUrl.searchParams.get('category')||undefined;return NextResponse.json({data:await publishedPosts(category)})}
