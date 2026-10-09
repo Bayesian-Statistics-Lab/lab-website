@@ -1,0 +1,1 @@
+export function editableStrings(item:Record<string,unknown>){return Object.fromEntries(['name_en','email','photo_url','scholar_author_id','lead','venue','doi','paper_url'].map(key=>[key,typeof item[key]==='string'?item[key]:'']));}

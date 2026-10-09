@@ -1,6 +1,6 @@
 -- Run once after 001_schema.sql. Safe to re-run. No existing content is deleted.
 begin;
-alter table public.profiles add column if not exists academic_role text check(academic_role in ('Masters','PhD','Undergraduate'));
+alter table public.profiles add column if not exists academic_role text check(academic_role in ('Masters','PhD','Undergraduate','Alumni'));
 alter table public.profiles add column if not exists membership_status text not null default 'pending' check(membership_status in ('pending','approved','rejected'));
 alter table public.members add column if not exists user_id uuid unique references auth.users(id) on delete set null;
 alter table public.posts add column if not exists author_id uuid references auth.users(id) on delete set null;
@@ -22,7 +22,7 @@ create or replace function public.register_lab_member() returns trigger language
 declare degree text; member_uuid uuid; scholar text; person_name text;
 begin
  degree:=new.raw_user_meta_data->>'academic_role';
- if degree is null or degree not in ('Masters','PhD','Undergraduate') then return new; end if;
+ if degree is null or degree not in ('Masters','PhD','Undergraduate','Alumni') then return new; end if;
  person_name:=left(trim(new.raw_user_meta_data->>'display_name'),100);
  if person_name is null or person_name='' then return new; end if;
  scholar:=new.raw_user_meta_data->>'scholar_author_id';

@@ -1,11 +1,9 @@
 import {NextRequest,NextResponse} from 'next/server';
 import {requireAdmin} from '@/lib/supabase';
-import {revalidatePath} from 'next/cache';
-import {z} from 'zod';
+import {revalidatePath,revalidateTag} from 'next/cache';
+import {z} from 'zod';import {contentSchema as schema} from '@/lib/content-schema';
 const tables=['posts','pages','members','publications'] as const;
-const safeImage=z.string().max(2048).refine(v=>!v||v.startsWith('/assets/')||v.startsWith('/api/media/')||/^https:\/\//.test(v),'HTTPS 또는 연구실 이미지 경로를 입력하세요');
-const schema=z.object({type:z.enum(tables),id:z.string().uuid().optional(),title:z.string().trim().min(1).max(250),slug:z.string().max(180).optional(),body:z.string().max(200000).default(''),lead:z.string().max(1000).optional(),category:z.string().min(1).max(180).optional(),status:z.enum(['draft','published']).default('draft'),role:z.enum(['Professor','Postdoc','PhD','Masters','Undergraduate','Alumni','Researcher','Principal Investigator']).optional(),name_en:z.string().max(200).optional(),email:z.union([z.literal(''),z.string().email()]).optional(),scholar_author_id:z.union([z.literal(''),z.string().regex(/^[A-Za-z0-9_-]{6,64}$/)]).optional(),photo_url:safeImage.optional(),sort_order:z.number().int().min(0).max(10000).optional(),authors:z.array(z.string().max(200)).max(100).optional(),year:z.number().int().min(1900).max(2100).nullable().optional(),venue:z.string().max(500).optional(),doi:z.string().max(500).optional(),paper_url:z.union([z.literal(''),z.string().url().startsWith('https://')]).optional()});
-function refresh(){revalidatePath('/','layout')}
+function refresh(){revalidateTag('lab-public');revalidatePath('/','layout')}
 export async function GET(request:NextRequest){const ctx=await requireAdmin();if(!ctx)return NextResponse.json({error:'Unauthorized'},{status:401});const type=request.nextUrl.searchParams.get('type');if(!tables.includes(type as typeof tables[number]))return NextResponse.json({error:'Invalid type'},{status:400});const {data,error}=await ctx.db.from(type!).select('*').limit(500);return NextResponse.json(error?{error:error.message}:{data},{status:error?500:200})}
 export async function POST(req:NextRequest){return save(req,false)}
 export async function PATCH(req:NextRequest){return save(req,true)}

@@ -1,3 +1,4 @@
+"use client";
 import Link from 'next/link';
-import {requireAdmin} from '@/lib/supabase';
-export default async function AdminToolbar({type='pages',slug='',category='notice',id=''}:{type?:string;slug?:string;category?:string;id?:string}){if(type==='posts'||!await requireAdmin())return null;const view=slug==='home/banner'?'banner':type;const query=new URLSearchParams({view,slug,category,id});const label=slug==='home/banner'?'배너 설정':type==='members'?'구성원 관리':type==='publications'?'논문 관리':'페이지 본문 수정';return <div className="admin-toolbar"><span>관리자 편집 도구</span><Link href={'/admin?'+query.toString()}>{label}</Link></div>}
+import {useAccount} from './AccountProvider';import {isAdministrator} from '@/lib/permissions';
+export default function AdminToolbar({type='pages',slug='',category='notice',id=''}:{type?:string;slug?:string;category?:string;id?:string}){const {account}=useAccount();if(type==='posts'||!isAdministrator(account?.role))return null;const view=slug==='home/banner'?'banner':type;const query=new URLSearchParams({view,slug,category,id});const label=slug==='home/banner'?'배너 설정':type==='members'?'구성원 관리':type==='publications'?'논문 관리':'페이지 본문 수정';return <div className="admin-toolbar"><span>관리자 편집 도구</span><Link href={'/admin?'+query.toString()}>{label}</Link></div>}
