@@ -1,3 +1,3 @@
 import {NextResponse} from 'next/server';
 import {currentAccount} from '@/lib/supabase';
-export async function GET(){const a=await currentAccount();return NextResponse.json({account:a?{role:a.role,approved:a.approved,user:{id:a.user.id}}:null},{headers:{'Cache-Control':'private, no-store'}})}
+export async function GET(){const account=await currentAccount();if(!account)return NextResponse.json({account:null},{headers:{'Cache-Control':'private, no-store'}});const {data:member}=await account.db.from('members').select('name,photo_url').eq('user_id',account.user.id).maybeSingle();return NextResponse.json({account:{role:account.role,approved:account.approved,user:{id:account.user.id},name:member?.name||account.profile?.display_name||'내 계정',photo_url:member?.photo_url||null}},{headers:{'Cache-Control':'private, no-store'}})}
