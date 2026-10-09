@@ -1,5 +1,18 @@
-"use client";import {useBoardWorkspace} from './BoardWorkspace';
+'use client';
+import {useBoardWorkspace} from './BoardWorkspace';
+import ConfirmDelete from './ConfirmDelete';
 import Link from 'next/link';
 import {useState} from 'react';
 import {useRouter,usePathname} from 'next/navigation';
-export default function PostActions({id}:{id:string}){const workspace=useBoardWorkspace();const router=useRouter();const path=usePathname();const [message,setMessage]=useState(''),[busy,setBusy]=useState(false),[confirming,setConfirming]=useState(false);return <div className="post-actions">{workspace?<button type="button" className="secondary-button" onClick={()=>workspace.open(id)}>수정</button>:<Link className="secondary-button" href={'/write?id='+id}>수정</Link>}{!confirming?<button className="danger-button" onClick={()=>setConfirming(true)}>삭제</button>:<><span>이 글의 공개를 해제할까요?</span><button className="danger-button" disabled={busy} onClick={async()=>{setBusy(true);try{const r=await fetch('/api/board',{method:'DELETE',headers:{'content-type':'application/json'},body:JSON.stringify({id})});const j=await r.json();if(!r.ok)throw Error(j.error);if(path.startsWith('/notice/'))router.push('/notice');else if(path.startsWith('/news/')&&!['/news/research','/news/academic','/news/events'].includes(path))router.push('/news');router.refresh();setMessage('공개를 해제했습니다. 내 글 목록에서 복원할 수 있습니다.');setConfirming(false);}catch(e){setMessage(e instanceof Error?e.message:'삭제 실패')}finally{setBusy(false)}}}>삭제 확인</button><button className="secondary-button" onClick={()=>setConfirming(false)}>취소</button></>}<span role="status">{message}</span></div>}
+export default function PostActions({id}:{id:string}){
+ const workspace=useBoardWorkspace(),router=useRouter(),path=usePathname();
+ const [error,setError]=useState(''),[busy,setBusy]=useState(false),[confirming,setConfirming]=useState(false),[deleted,setDeleted]=useState(false);
+ async function remove(){setBusy(true);setError('');try{
+  const r=await fetch('/api/board',{method:'DELETE',headers:{'content-type':'application/json'},body:JSON.stringify({id})});const j=await r.json();if(!r.ok)throw Error(j.error||'삭제하지 못했습니다.');
+  setConfirming(false);setDeleted(true);
+  if(path.startsWith('/notice/'))router.replace('/notice');else if(path.startsWith('/news/')&&!['/news/research','/news/academic','/news/events'].includes(path))router.replace('/news');
+  router.refresh();
+ }catch(e){setError(e instanceof Error?e.message:'삭제하지 못했습니다.')}finally{setBusy(false)}}
+ if(deleted)return <p className="action-feedback" role="status">게시글을 삭제했습니다.</p>;
+ return <div className="post-actions"><div className="action-buttons">{workspace?<button type="button" className="secondary-button" onClick={()=>workspace.open(id)}>수정</button>:<Link className="secondary-button" href={'/write?id='+id}>수정</Link>}<button type="button" className="danger-button" onClick={()=>{setError('');setConfirming(true)}}>삭제</button></div>{confirming&&<ConfirmDelete title="게시글을 삭제할까요?" description="게시글이 목록과 공개 페이지에서 삭제됩니다. 삭제한 글은 복원할 수 없습니다." busy={busy} error={error} onConfirm={remove} onCancel={()=>setConfirming(false)}/>}</div>;
+}

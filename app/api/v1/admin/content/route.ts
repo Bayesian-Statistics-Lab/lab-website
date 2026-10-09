@@ -1,3 +1,4 @@
+import {deleteRecord} from '@/lib/deletion';
 import {normalizeBody,bodyExcerpt} from '@/lib/rich-text';
 import {NextRequest,NextResponse} from 'next/server';
 import {requireAdmin} from '@/lib/supabase';
@@ -14,5 +15,13 @@ else if(p.type==='publications'){data={title:p.title,status:p.status};for(const 
 else if(p.type==='pages'){if(!p.slug)return NextResponse.json({error:'페이지 경로가 필요합니다.'},{status:400});data={title:p.title,slug:p.slug,body:p.body,status:p.status,updated_at:new Date().toISOString()};if(p.lead!==undefined)data.lead=p.lead;}
 else {data={title:p.title,body:normalizeBody(p.body),excerpt:bodyExcerpt(p.body),status:p.status};if(p.slug)data.slug=p.slug;else if(!updating)data.slug=crypto.randomUUID();if(p.category)data.category=p.category;if(p.status==='published'){if(!updating)data.published_at=new Date().toISOString();else {const {data:old}=await ctx.db.from('posts').select('published_at').eq('id',p.id!).single();if(!old?.published_at)data.published_at=new Date().toISOString();}}}
 const q=ctx.db.from(p.type);const result=updating?await q.update(data).eq('id',p.id!).select().single():await q.insert(data).select().single();if(!result.error)refresh();return NextResponse.json(result.error?{error:result.error.message}:{data:result.data},{status:result.error?400:200})}
-// Removal is reversible: records are unpublished and remain editable in the CMS.
-export async function DELETE(req:NextRequest){const ctx=await requireAdmin();if(!ctx)return NextResponse.json({error:'Unauthorized'},{status:401});const p=z.object({type:z.enum(tables),id:z.string().uuid()}).safeParse(await req.json().catch(()=>null));if(!p.success)return NextResponse.json({error:'Invalid body'},{status:400});const {error}=await ctx.db.from(p.data.type).update(p.data.type==='members'?{is_visible:false}:{status:'draft'}).eq('id',p.data.id);if(!error)refresh();return NextResponse.json(error?{error:error.message}:{ok:true},{status:error?400:200})}
+// Posts and member profiles are removed; other content retains its draft workflow.
+export async function DELETE(req:NextRequest){
+ const ctx=await requireAdmin();if(!ctx)return NextResponse.json({error:'관리자 권한이 필요합니다.'},{status:401});
+ const p=z.object({type:z.enum(tables),id:z.string().uuid()}).safeParse(await req.json().catch(()=>null));if(!p.success)return NextResponse.json({error:'삭제할 항목을 확인해주세요.'},{status:400});
+ const {type,id}=p.data;
+ const result=type==='posts'||type==='members'?await deleteRecord(ctx.db,type,id):await ctx.db.from(type).update({status:'draft'}).eq('id',id).select('id').maybeSingle();
+ if(result.error)return NextResponse.json({error:'항목을 처리하지 못했습니다. 잠시 후 다시 시도해주세요.'},{status:500});
+ if(!result.data)return NextResponse.json({error:'항목을 찾을 수 없거나 권한이 없습니다.'},{status:404});
+ refresh();return NextResponse.json({ok:true});
+}
