@@ -18,3 +18,10 @@ test('gradient IDs are isolated between instances and every reference resolves',
   for(const reference of markup.matchAll(/url\(#([^)]+)\)/g))assert.ok(ids.has(reference[1]));
  }
 });
+
+test('themed icon keys round trip and reject malformed CSS input',async()=>{
+ const {themeIconKey,iconTheme,themeIconSvg}=await import('../lib/site-icon.ts');
+ for(const preset of themePresets){assert.deepEqual(iconTheme(themeIconKey(preset.colors)),preset.colors);const svg=themeIconSvg(preset.colors);assert.ok(svg.startsWith('<svg'));assert.equal(svg.includes('var('),false);assert.equal(svg.includes('undefined'),false)}
+ assert.equal(iconTheme('bad'),null);assert.equal(iconTheme('ffffff;display:none'),null);assert.deepEqual(iconTheme(null),defaultTheme);
+ assert.notEqual(themeIconKey(defaultTheme),themeIconKey(themePresets[1].colors));
+});
