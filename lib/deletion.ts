@@ -1,4 +1,5 @@
 import type {SupabaseClient} from '@supabase/supabase-js';
+import {createPublicationRepository} from '../server/publications/publication.repository.ts';
 
 // A successful HTTP response is not proof of deletion: RLS can affect zero rows.
 export async function deleteRecord(db:SupabaseClient,type:'posts'|'members',id:string,authorId?:string){
@@ -12,7 +13,7 @@ export async function deleteRecord(db:SupabaseClient,type:'posts'|'members',id:s
 }
 
 // The schema cascades publication deletion to member links and Scholar external IDs.
-export async function deletePublications(db:SupabaseClient,ids:string[]){return db.from('publications').delete().in('id',ids).select('id')}
+export async function deletePublications(db:SupabaseClient,ids:string[]){return createPublicationRepository(db).deleteByIds(ids)}
 
 // Linked member removal uses the same transaction as account withdrawal.
 // Deleting only members would let application repair resurrect an approved account.
