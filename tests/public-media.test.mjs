@@ -3,3 +3,12 @@ import {publicMediaPaths} from '../lib/public-media.ts';
 const path='11111111-1111-1111-1111-111111111111/22222222-2222-2222-2222-222222222222.webp';const url='/api/media/'+path;
 test('public media index recognizes portraits, rich text and approved image settings without duplicates',()=>{assert.deepEqual(publicMediaPaths([{photo_url:url,bio:'<img src="'+url+'">'}],[{body:'<img src="'+url+'">'}],[{slug:'home/banner',body:JSON.stringify({image:url})},{slug:'settings/research',body:JSON.stringify({cards:[{image:url}]})},{slug:'settings/auth',body:JSON.stringify({image:url})}]),[path]);for(const slug of ['home/banner','settings/auth'])assert.deepEqual(publicMediaPaths([],[],[{slug,body:JSON.stringify({image:url})}]),[path]);assert.deepEqual(publicMediaPaths([],[],[{slug:'settings/research',body:JSON.stringify({cards:[{image:url}]})}]),[path]);});
 test('unrelated JSON, remote URLs, unsafe paths and links do not make private objects public',()=>{assert.deepEqual(publicMediaPaths([{photo_url:'https://example.com/photo.webp'}],[{body:'<a href="'+url+'">download</a>'}],[{slug:'settings/member/example',body:JSON.stringify({image:url})},{slug:'home/banner',body:JSON.stringify({image:'/api/media/../secret.webp'})}]),[]);assert.deepEqual(publicMediaPaths([],[],[{slug:'settings/auth',body:'invalid json'}]),[]);});
+
+test('PDF attachments referenced in published forms are public and deduplicated',()=>{
+ const pdf=path.replace('.webp','.pdf'),link='<a href="/api/media/'+pdf+'">서식.pdf</a>';
+ assert.deepEqual(publicMediaPaths([],[{category:'forms',body:link+link}],[]),[pdf]);
+ for(const category of ['news','notice','events',undefined])assert.deepEqual(publicMediaPaths([],[{category,body:link}],[]),[]);
+});
+test('forms cannot publish remote, malformed or non-document link paths',()=>{
+ for(const href of ['https://example.com/file.pdf','/api/media/../file.pdf',url,'javascript:alert(1)'])assert.deepEqual(publicMediaPaths([],[{category:'forms',body:'<a href="'+href+'">file</a>'}],[]),[]);
+});

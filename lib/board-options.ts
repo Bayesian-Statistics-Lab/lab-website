@@ -1,1 +1,3 @@
-export const boardOptions=[['notice','공지사항'],['news','연구실 소식'],['research','연구성과'],['academic','학술활동'],['events','행사']];
+export const boardOptions=[['notice','공지사항'],['news','연구실 소식'],['research','연구성과'],['academic','학술활동'],['events','행사'],['forms','연구지원 서식']];
+export function boardPath(category:string){return category==='forms'?'/support/forms':category==='notice'?'/notice':category.startsWith('page:')?'/'+category.slice(5):category==='news'?'/news':['research','academic','events'].includes(category)?'/news/'+category:'/news'}
+export function postPath(category:string,slug:string){return category.startsWith('page:')?boardPath(category):(category==='forms'?'/support/forms':category==='notice'?'/notice':'/news')+'/'+slug}
