@@ -1,6 +1,23 @@
-import {richMediaPaths} from '@/lib/rich-text';
+import {publicMediaPaths} from '@/lib/public-media';
 import {NextRequest,NextResponse} from 'next/server';
 import {unstable_cache} from 'next/cache';
 import {publicDb,privilegedDb,currentAccount} from '@/lib/supabase';
-const publicImage=unstable_cache(async(storagePath:string)=>{const db=publicDb(),service=privilegedDb();if(!db||!service)return null;const url='/api/media/'+storagePath;const [member,banner,posts,pages,bios]=await Promise.all([db.from('members').select('id').eq('photo_url',url).eq('is_visible',true).limit(1),db.from('pages').select('body').eq('slug','home/banner').eq('status','published').maybeSingle(),db.from('posts').select('body').eq('status','published').like('body','%'+url+'%').limit(50),db.from('pages').select('body').eq('status','published').like('body','%'+url+'%').limit(50),db.from('members').select('bio').eq('is_visible',true).like('bio','%'+url+'%').limit(50)]);let image='';try{image=JSON.parse(banner.data?.body||'{}').image;}catch{}if(!member.data?.length&&image!==url&&![...(posts.data||[]),...(pages.data||[]),...(bios.data||[]).map(p=>({body:p.bio}))].some(p=>richMediaPaths(p.body||'').includes(storagePath)))return null;const {data}=await service.storage.from('lab-media').createSignedUrl(storagePath,300);return data?.signedUrl||null;},['public-lab-image'],{revalidate:60,tags:['lab-public']});
+// Share the reference index across all images instead of querying each image separately.
+const publicReferences=unstable_cache(async()=>{
+ const db=publicDb();if(!db)return [] as string[];
+ async function rows(table:string,columns:string,filter:string,value:unknown){
+  const result:any[]=[];
+  for(let offset=0;;offset+=1000){const {data,error}=await db!.from(table).select(columns).eq(filter,value).order('id').range(offset,offset+999);if(error)throw Error('공개 이미지 정보를 확인하지 못했습니다.');result.push(...(data||[]));if(!data||data.length<1000)return result}
+ }
+ const [members,posts,pages]=await Promise.all([rows('members','photo_url,bio','is_visible',true),rows('posts','body','status','published'),rows('pages','slug,body','status','published')]);
+ return publicMediaPaths(members,posts,pages);
+},['public-media-reference-index'],{revalidate:60,tags:['lab-public']});
+let pendingReferences:Promise<string[]>|undefined;
+function references(){return pendingReferences??=(publicReferences().finally(()=>{pendingReferences=undefined}))}
+const publicImage=unstable_cache(async(storagePath:string)=>{
+ if(!(await references()).includes(storagePath))return null;
+ const service=privilegedDb();if(!service)return null;
+ const {data}=await service.storage.from('lab-media').createSignedUrl(storagePath,300);
+ return data?.signedUrl||null;
+},['public-lab-image-v2'],{revalidate:60,tags:['lab-public']});
 export async function GET(_req:NextRequest,{params}:{params:Promise<{path:string[]}>}){const {path}=await params;const storagePath=path.join('/');if(!/^[0-9a-f-]{36}\/[0-9a-f-]{36}\.(jpg|png|webp|gif|pdf)$/.test(storagePath))return new NextResponse(null,{status:404});const signed=await publicImage(storagePath);if(signed)return NextResponse.redirect(signed,{headers:{'Cache-Control':'public, max-age=30, s-maxage=30'}});const account=await currentAccount();if(!account)return new NextResponse(null,{status:404});if(!['admin','owner'].includes(account.role)){if(!storagePath.startsWith(account.user.id+'/'))return new NextResponse(null,{status:404});}const storage=privilegedDb();if(!storage)return new NextResponse(null,{status:404});const {data}=await storage.storage.from('lab-media').createSignedUrl(storagePath,120);if(!data)return new NextResponse(null,{status:404});return NextResponse.redirect(data.signedUrl,{headers:{'Cache-Control':'private, no-store'}})}
