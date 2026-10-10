@@ -10,7 +10,7 @@ export default function PostActions({id,editOnly=false,deleteOnly=false,disabled
  async function remove(){if(disabled||busy)return;setBusy(true);onBusyChange?.(true);setError('');try{
   const r=await fetch('/api/board',{method:'DELETE',headers:{'content-type':'application/json'},body:JSON.stringify({id})});const j=await r.json();if(!r.ok)throw Error(j.error||'삭제하지 못했습니다.');
   setConfirming(false);setDeleted(true);onDeleted?.();
-  if(path.startsWith('/notice/'))router.replace('/notice');else if(path.startsWith('/news/')&&!['/news/research','/news/academic','/news/events'].includes(path))router.replace('/news');
+  if(path.startsWith('/support/forms/'))router.replace('/support/forms');else if(path.startsWith('/notice/'))router.replace('/notice');else if(path.startsWith('/news/')&&!['/news/research','/news/academic','/news/events'].includes(path))router.replace('/news');
   router.refresh();
  }catch(e){setError(e instanceof Error?e.message:'삭제하지 못했습니다.')}finally{setBusy(false);onBusyChange?.(false)}}
  if(deleted)return null;

@@ -12,7 +12,7 @@ const publicReferences=unstable_cache(async()=>{
   const result:any[]=[];
   for(let offset=0;;offset+=1000){const {data,error}=await db!.from(table).select(columns).eq(filter,value).order('id').range(offset,offset+999);if(error)throw Error('공개 이미지 정보를 확인하지 못했습니다.');result.push(...(data||[]));if(!data||data.length<1000)return result}
  }
- const [members,posts,pages]=await Promise.all([rows('members','photo_url,bio','is_visible',true),rows('posts','body','status','published'),rows('pages','slug,body','status','published')]);
+ const [members,posts,pages]=await Promise.all([rows('members','photo_url,bio','is_visible',true),rows('posts','body,category','status','published'),rows('pages','slug,body','status','published')]);
  return publicMediaPaths(members,posts,pages);
 },['public-media-reference-index'],{revalidate:60,tags:['lab-public']});
 let pendingReferences:Promise<string[]>|undefined;
