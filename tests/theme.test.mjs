@@ -1,3 +1,4 @@
+import {defaultDesign} from '../lib/site-design.ts';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {defaultTheme,readTheme,themeVariables,themePresets,themeWarnings,contrastRatio} from '../lib/theme.ts';
@@ -30,6 +31,6 @@ test('contrast warnings detect unreadable text on both backgrounds',()=>{
 });
 test('theme service defaults missing settings and preserves read and write errors',async()=>{
  const calls=[];const repository={read:async()=>({data:null,error:null}),save:async theme=>{calls.push(theme);return {error:null}}};
- const service=createThemeService(repository);assert.deepEqual(await service.read(),{data:defaultTheme,error:null});assert.deepEqual(await service.save(themePresets[1].colors),{error:null});assert.deepEqual(calls,[themePresets[1].colors]);
+ const service=createThemeService(repository);assert.deepEqual(await service.read(),{data:defaultDesign,error:null});assert.deepEqual(await service.save(themePresets[1].colors),{error:null});assert.deepEqual(calls,[themePresets[1].colors]);
  const error={message:'denied'};const failed=createThemeService({read:async()=>({data:null,error}),save:async()=>({error})});assert.equal((await failed.read()).error,error);assert.equal((await failed.save(defaultTheme)).error,error);
 });

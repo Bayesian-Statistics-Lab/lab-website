@@ -160,3 +160,11 @@ a{color:inherit;text-decoration:none}button,input,select,textarea{font:inherit;l
 @media(max-width:380px){.theme-fields{grid-template-columns:1fr}}
 
 .skip-link{color:var(--on-deep,#fff)}
+
+/* Default vector artwork inherits the same dimensions as uploaded photos. */
+.research-card-image svg{display:block;width:100%;height:100%}.professor-portrait svg{display:block;width:100%;height:100%;object-fit:cover}
+
+/* Editable brand copy wraps safely in the shared header and preview. */
+.brand-label{max-width:280px}.brand-label strong{white-space:normal;overflow-wrap:anywhere}.brand-label small{white-space:pre-line;overflow-wrap:anywhere}.theme-presets{margin-top:24px}
+@media(max-width:650px){.brand-label{max-width:160px}}
+@media(max-width:380px){.brand-label{max-width:115px}}

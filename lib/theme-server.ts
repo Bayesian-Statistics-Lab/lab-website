@@ -1,3 +1,3 @@
 import {page} from './data';
-import {readTheme} from './theme';
-export async function siteTheme(){const row=await page('settings/theme');return readTheme(row?.body)}
+import {readDesign} from './site-design';
+export async function siteTheme(){const row=await page('settings/theme');return readDesign(row?.body)}
