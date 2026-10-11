@@ -5,7 +5,7 @@
 - 운영 사이트: https://lab-website-eight-omega.vercel.app/
 - 저장소: https://github.com/Bayesian-Statistics-Lab/lab-website
 - 패키지 버전: `0.2.0` (두 번째 릴리즈)
-- [변경 이력](CHANGELOG.md) · [v2 릴리스 문서](docs/releases/2026-10-10-v2.md) · [첫 릴리스 기록](docs/releases/2026-10-10.md)
+- [최신 릴리즈 노트](docs/releases/2026-10-12.md) · [변경 이력](CHANGELOG.md) · [v2 릴리스 문서](docs/releases/2026-10-10-v2.md) · [첫 릴리스 기록](docs/releases/2026-10-10.md)
 - [가입·승인·프로필·계정 삭제 운영 안내](docs/AUTH_AND_PROFILE.md)
 - [단계별 리팩토링 구조·보존 계약](docs/REFACTORING.md)
 
@@ -24,6 +24,12 @@
 | 논문 | Scholar 검색·가져오기·초안 검토, 공개 토글, 선택 삭제, 인용수 정렬, 제공된 요약·학술지 표시 |
 
 Pretendard는 `public/assets/fonts`에서 자체 제공하며 OFL 라이선스를 포함합니다. 로고·파비콘과 기본 리소스는 `public/assets`에 있습니다. 외부 API가 요약을 제공하지 않는 논문에는 임의 요약을 생성하지 않습니다.
+
+## v0.2.0 이후 변경 (2026-10-12)
+
+PR #7~#12 병합 기준으로 논문 편집기의 책임을 분리하고, 구성원 사진을 공용 미디어 경로와 private Storage의 저장된 축소본으로 재사용하도록 변경했습니다. 구성원 이름·역할의 한글/영문 배치와 카드 너비·간격을 조정했으며, 교수 연구 관심 분야는 사진 옆 소개 영역에 표시합니다. 관리자 ‘관련 링크’를 입력했을 때만 연결 버튼이 나타납니다.
+
+기능 기준은 [`fb5080e`](https://github.com/Bayesian-Statistics-Lab/lab-website/commit/fb5080e65568322caa51f92f77ea1f7fbc80d8b3)입니다. 테스트 136개·타입 검사·프로덕션 빌드가 통과했습니다. 추가 SQL·환경변수와 패키지 버전 변경은 없으며, 저장소 용량·캐시 반영 시간·운영 시각 확인 범위는 [최신 릴리즈 노트](docs/releases/2026-10-12.md)에 정리했습니다.
 
 ## 두 번째 릴리즈: v0.2.0 (2026-10-10)
 
