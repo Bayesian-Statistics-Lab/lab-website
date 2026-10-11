@@ -168,3 +168,9 @@ a{color:inherit;text-decoration:none}button,input,select,textarea{font:inherit;l
 .brand-label{max-width:280px}.brand-label strong{white-space:normal;overflow-wrap:anywhere}.brand-label small{white-space:pre-line;overflow-wrap:anywhere}.theme-presets{margin-top:24px}
 @media(max-width:650px){.brand-label{max-width:160px}}
 @media(max-width:380px){.brand-label{max-width:115px}}
+
+/* Keep member translations beside their Korean label, with natural wrapping. */
+.member-bilingual-label>span{white-space:nowrap}
+.member-group-heading .member-bilingual-label>span{font-size:inherit;color:inherit}
+.member-bilingual-label small,.professor-top h3.member-bilingual-label small,.person h3.member-bilingual-label small{display:inline;margin:0 0 0 .35em;font-size:.65em;font-weight:400;letter-spacing:normal;color:var(--muted)}
+.person>div:last-child{min-width:0;overflow-wrap:anywhere}
