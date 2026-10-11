@@ -174,3 +174,34 @@ a{color:inherit;text-decoration:none}button,input,select,textarea{font:inherit;l
 .member-group-heading .member-bilingual-label>span{font-size:inherit;color:inherit}
 .member-bilingual-label small,.professor-top h3.member-bilingual-label small,.person h3.member-bilingual-label small{display:inline;margin:0 0 0 .35em;font-size:.65em;font-weight:400;letter-spacing:normal;color:var(--muted)}
 .person>div:last-child{min-width:0;overflow-wrap:anywhere}
+
+/* Member directory: clear type hierarchy and balanced card widths. */
+.people-directory .team-section-heading h2{font-size:28px;line-height:1.5;letter-spacing:-.03em}
+.people-directory .team-section-heading .member-bilingual-label small{font-size:15px;margin-left:.6em}
+.people-directory .professors-section>.team-section-heading,
+.people-directory .research-team-section>.team-section-heading,
+.people-directory .alumni-section>.team-section-heading{margin-bottom:32px;align-items:baseline}
+.people-directory .member-group-heading{margin-bottom:16px}
+.people-directory .member-group-heading h3{font-size:21px;line-height:1.5;letter-spacing:-.025em}
+.people-directory .member-group-heading .member-bilingual-label small{font-size:13px;margin-left:.65em}
+.people-directory .member-cards{grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:16px}
+.people-directory .member-cards .person{gap:20px;padding:20px 24px;border-radius:12px}
+.people-directory .member-cards .person h3{font-size:19px;line-height:1.65;margin-bottom:6px}
+.people-directory .member-cards .person .member-bilingual-label small{font-size:14px;margin-left:.5em}
+.people-directory .member-cards .person p{font-size:14px;line-height:1.65}
+.people-directory .research-team-section .member-group{margin-bottom:32px}
+.people-directory .research-team-section .member-group:last-child{margin-bottom:0}
+.people-directory .research-team-section,.people-directory .alumni-section{margin-top:64px}
+.people-directory .professor-top h3{font-size:30px;line-height:1.5;margin-top:0}
+.people-directory .professor-top h3.member-bilingual-label small{font-size:18px;margin-left:.5em}
+@media(max-width:650px){
+ .people-directory .team-section-heading h2{font-size:24px}
+ .people-directory .team-section-heading .member-bilingual-label small{font-size:13px}
+ .people-directory .member-group-heading h3{font-size:19px}
+ .people-directory .member-cards .person{padding:16px;gap:16px}
+ .people-directory .member-cards .person h3{font-size:18px}
+ .people-directory .member-cards .person .member-bilingual-label small{font-size:13px}
+ .people-directory .professor-top h3{font-size:26px}
+ .people-directory .professor-top h3.member-bilingual-label small{font-size:16px}
+ .people-directory .research-team-section,.people-directory .alumni-section{margin-top:48px}
+}
