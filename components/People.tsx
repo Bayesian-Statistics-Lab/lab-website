@@ -2,7 +2,25 @@ import MemberPortrait from './MemberPortrait';
 import DefaultArtwork from './DefaultArtwork';
 import RichText from './RichText';import Link from 'next/link';import AdminToolbar from './AdminToolbar';
 import {professor,memberGroups,groupRole} from '@/lib/professor';import {professorDetails} from '@/lib/professor-details';
-export function ProfessorProfile({member=professor}:{member?:any}){const details=professorDetails(member.professor_details);return <section className="professor-profile"><div className="professor-top"><div className="professor-portrait">{(member.photo_url||professor.photo_url)?<MemberPortrait sizes="280px" priority src={member.photo_url||professor.photo_url} alt={member.name} width={280} height={350}/>:<DefaultArtwork src="/assets/brand/lab-mark.svg" alt="연구실 심볼"/>}</div><div><h3 className="member-bilingual-label"><span>{member.name}</span> <small lang="en">{member.name_en||'Kwangmin Lee'}</small></h3><p>{details.position}</p>{member.email&&<a href={'mailto:'+member.email}>{member.email}</a>}<p>{details.office}{details.phone&&' · '+details.phone}</p>{details.website&&<a className="secondary-button" href={details.website} target="_blank" rel="noopener noreferrer">교수 개인 홈페이지 ↗</a>}</div></div>{details.interests&&<div className="profile-section"><h3>연구 관심 분야</h3><div className="interest-tags">{details.interests.split('\n').filter(Boolean).map(x=><span className="pill" key={x}>{x}</span>)}</div></div>}{details.career&&<div className="profile-section"><h3>학력 및 주요 경력</h3><dl className="career-list">{details.career.split('\n').filter(Boolean).map((line,i)=>{const [date,...description]=line.split('|');return <div key={i}><dt>{description.length?date.trim():''}</dt><dd>{description.length?description.join('|').trim():date}</dd></div>})}</dl></div>}{member.bio&&member.bio!==professor.bio&&<div className="profile-section"><h3>소개</h3><RichText body={member.bio}/></div>}</section>}
+export function ProfessorProfile({member=professor}:{member?:any}){
+ const details=professorDetails(member.professor_details);
+ const interests=details.interests.split('\n').map(text=>text.trim()).filter(Boolean);
+ return <section className="professor-profile">
+  <div className="professor-top">
+   <div className="professor-portrait">{(member.photo_url||professor.photo_url)?<MemberPortrait sizes="280px" priority src={member.photo_url||professor.photo_url} alt={member.name} width={280} height={350}/>:<DefaultArtwork src="/assets/brand/lab-mark.svg" alt="연구실 심볼"/>}</div>
+   <div className="professor-summary">
+    <h3 className="member-bilingual-label"><span>{member.name}</span> <small lang="en">{member.name_en||'Kwangmin Lee'}</small></h3>
+    <p>{details.position}</p>
+    {member.email&&<a href={'mailto:'+member.email}>{member.email}</a>}
+    <p>{details.office}{details.phone&&' · '+details.phone}</p>
+    {interests.length>0&&<div className="professor-interests"><h4>연구 관심 분야</h4><div className="interest-tags">{interests.map((text,index)=><span className="pill" key={index}>{text}</span>)}</div></div>}
+    {details.related_url&&<div className="professor-links"><a className="secondary-button" href={details.related_url} target="_blank" rel="noopener noreferrer">관련 링크 ↗</a></div>}
+   </div>
+  </div>
+  {details.career&&<div className="profile-section"><h3>학력 및 주요 경력</h3><dl className="career-list">{details.career.split('\n').filter(Boolean).map((line,i)=>{const [date,...description]=line.split('|');return <div key={i}><dt>{description.length?date.trim():''}</dt><dd>{description.length?description.join('|').trim():date}</dd></div>})}</dl></div>}
+  {member.bio&&member.bio!==professor.bio&&<div className="profile-section"><h3>소개</h3><RichText body={member.bio}/></div>}
+ </section>;
+}
 export default function People({people}:{people:any[]}){
  const list=people.length?people:[professor],professors=list.filter(m=>groupRole(m.role)==='Professor'),currentGroups=memberGroups.filter(([role])=>!['Professor','Alumni'].includes(role)&&list.some(m=>groupRole(m.role)===role)),hasAlumni=list.some(m=>groupRole(m.role)==='Alumni');
  const earlyPortraits=new Set(currentGroups.flatMap(([role])=>list.filter(m=>groupRole(m.role)===role&&m.photo_url)).slice(0,4).map(m=>m.id));

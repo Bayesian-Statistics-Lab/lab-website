@@ -205,3 +205,15 @@ a{color:inherit;text-decoration:none}button,input,select,textarea{font:inherit;l
  .people-directory .professor-top h3.member-bilingual-label small{font-size:16px}
  .people-directory .research-team-section,.people-directory .alumni-section{margin-top:48px}
 }
+
+/* Research interests share the professor's portrait-side summary. */
+.professor-profile .professor-top{align-items:flex-start}
+.professor-summary{flex:1;min-width:0;width:100%}
+.professor-summary>h3{margin-top:0}
+.professor-summary>a{display:inline-block;margin-bottom:8px;overflow-wrap:anywhere}
+.professor-interests{margin-top:24px}
+.professor-interests h4{font-size:16px;margin:0 0 12px}
+.professor-interests .interest-tags{gap:8px;max-width:100%}
+.professor-interests .pill{white-space:normal;overflow-wrap:anywhere;line-height:1.6}
+.professor-links{margin-top:20px}
+@media(max-width:650px){.professor-interests{margin-top:20px}}

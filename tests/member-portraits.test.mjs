@@ -69,3 +69,19 @@ test('the actual member detail uses the shared portrait path and keeps layout di
  assert.match(portrait,/width="280" height="350"/);assert.match(portrait,/loading="eager"/);assert.match(portrait,/fetchPriority="high"/);
  assert.match(html,/member-portrait/);assert.match(html,/member-biography/);
 });
+
+test('professor interests stay in the portrait-side summary and legacy websites do not show a button',()=>{
+ const Professor=component('components/People.tsx').ProfessorProfile;
+ const html=render(Professor,{member:{name:'Professor',role:'Professor',photo_url:url,professor_details:{website:'https://example.com/legacy',interests:'Bayesian Inference'}}});
+ assert.match(html,/class="professor-summary"[\s\S]*class="professor-interests"[\s\S]*Bayesian Inference/);
+ assert.doesNotMatch(html,/개인 홈페이지|관련 링크|example.com\/legacy/);
+});
+test('professor related links appear only when a new link is configured',()=>{
+ const Professor=component('components/People.tsx').ProfessorProfile;
+ const member={name:'Professor',role:'Professor',photo_url:url};
+ assert.doesNotMatch(render(Professor,{member}),/관련 링크/);
+ const html=render(Professor,{member:{...member,professor_details:{related_url:'https://example.com/research'}}});
+ assert.match(html,/href="https:\/\/example.com\/research" target="_blank" rel="noopener noreferrer">관련 링크/);
+ const schema=component('lib/professor-details.ts').professorDetailsSchema;
+ assert.equal(schema.safeParse({related_url:'javascript:alert(1)'}).success,false);
+});
